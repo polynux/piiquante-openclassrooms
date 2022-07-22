@@ -14,22 +14,6 @@ mongoose
   .then(() => console.log("connected to mongodb"))
   .catch(err => console.error(err));
 
-const sauceSchema = new mongoose.Schema({
-  userId: String,
-  name: String,
-  manufacturer: String,
-  description: String,
-  mainPepper: String,
-  imageUrl: String,
-  heat: Number,
-  likes: Number,
-  dislikes: Number,
-  usersLiked: [{ userId: String }],
-  usersDisliked: [{ userId: String }]
-});
-
-let Sauce = mongoose.model("Sauce", sauceSchema);
-
 class User {
   constructor() {
     this.createSchema();
@@ -47,7 +31,7 @@ class User {
     this.userModel = mongoose.model("User", this.userSchema);
   }
 
-  createUser = ({ email, password }) => {
+  newUser = ({ email, password }) => {
     let user = new this.userModel({ email, password });
     return user
       .save()
@@ -61,6 +45,40 @@ class User {
       .then(user => user)
       .catch(err => err);
   };
+}
+
+class Sauce {
+  constructor() {
+    this.createSchema();
+    this.createModel();
+  }
+  createSchema() {
+    this.sauceSchema = new mongoose.Schema({
+      userId: String,
+      name: String,
+      manufacturer: String,
+      description: String,
+      mainPepper: String,
+      imageUrl: String,
+      heat: Number,
+      likes: Number,
+      dislikes: Number,
+      usersLiked: [{ userId: String }],
+      usersDisliked: [{ userId: String }]
+    });
+  }
+
+  createModel() {
+    this.sauceModel = mongoose.model("Sauce", this.sauceSchema);
+  }
+
+  newSauce(sauce) {
+    let newSauce = new this.sauceModel(sauce);
+    return newSauce
+      .save()
+      .then(() => "Sauce enregistrée")
+      .catch(err => err);
+  }
 }
 
 module.exports = { User, Sauce, mongoose };
