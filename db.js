@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
 require("dotenv").config();
 
 const dbUrl = process.env.DB_URL.replace(
@@ -14,9 +15,11 @@ mongoose
   .catch(err => console.error(err));
 
 const userSchema = new mongoose.Schema({
-  email: { type: String },
+  email: { type: String, unique: true },
   password: { type: String }
 });
+userSchema.plugin(uniqueValidator);
+
 const sauceSchema = new mongoose.Schema({
   userId: String,
   name: String,
@@ -34,4 +37,12 @@ const sauceSchema = new mongoose.Schema({
 let User = mongoose.model("User", userSchema);
 let Sauce = mongoose.model("Sauce", sauceSchema);
 
-module.exports = { User, Sauce, mongoose };
+const createUser = ({ email, password }) => {
+  let user = new User({ email, password });
+  return user
+    .save()
+    .then(() => "Utilisateur enregistré")
+    .catch(err => err);
+};
+
+module.exports = { User, Sauce, mongoose, createUser };

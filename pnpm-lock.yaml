@@ -4,12 +4,14 @@ specifiers:
   dotenv: ^16.0.1
   express: ^4.18.1
   mongoose: ^6.4.4
+  mongoose-unique-validator: ^3.1.0
   nodemon: ^2.0.19
 
 dependencies:
   dotenv: 16.0.1
   express: 4.18.1
   mongoose: 6.4.6
+  mongoose-unique-validator: 3.1.0_mongoose@6.4.6
 
 devDependencies:
   nodemon: 2.0.19
@@ -423,6 +425,18 @@ packages:
     resolution: {integrity: sha512-aJ9opVoXroQUPfovYP5kaj2lM7Jn02Gw13bL0lg9v0V7SaUc0qavPs0Eue7d2DcC3NjqI6QAUElXNsuZSeM+EA==}
     dev: false
 
+  /lodash.foreach/4.5.0:
+    resolution: {integrity: sha512-aEXTF4d+m05rVOAUG3z4vZZ4xVexLKZGF0lIxuHZ1Hplpk/3B6Z1+/ICICYRLm7c41Z2xiejbkCkJoTlypoXhQ==}
+    dev: false
+
+  /lodash.get/4.4.2:
+    resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
+    dev: false
+
+  /lodash.merge/4.6.2:
+    resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
+    dev: false
+
   /media-typer/0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
     engines: {node: '>= 0.6'}
@@ -483,6 +497,17 @@ packages:
       socks: 2.7.0
     optionalDependencies:
       saslprep: 1.0.3
+    dev: false
+
+  /mongoose-unique-validator/3.1.0_mongoose@6.4.6:
+    resolution: {integrity: sha512-UsBBlFapip8gc8x1h+nLWnkOy+GTy9Z+zmTyZ35icLV3EoLIVz180vJzepfMM9yBy2AJh+maeuoM8CWtqejGUg==}
+    peerDependencies:
+      mongoose: ^6.0.0
+    dependencies:
+      lodash.foreach: 4.5.0
+      lodash.get: 4.4.2
+      lodash.merge: 4.6.2
+      mongoose: 6.4.6
     dev: false
 
   /mongoose/6.4.6:
