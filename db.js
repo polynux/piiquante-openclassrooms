@@ -1,13 +1,12 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const username = process.env.DB_USERNAME;
-const password = process.env.DB_PASSWORD;
-const database = process.env.DB_DATABASE;
-const dbUrl = process.env.DB_URL.replace("<username>:<password>", `${username}:${password}`).replace(
-  "<database>",
-  database
-);
+const dbUrl = process.env.DB_URL.replace(
+  "<username>:<password>",
+  `${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}`
+)
+  .replace("<host>", process.env.DB_HOST)
+  .replace("<database>", process.env.DB_DATABASE);
 
 mongoose
   .connect(dbUrl)
