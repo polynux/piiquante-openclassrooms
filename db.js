@@ -80,4 +80,4 @@ class Sauce {
   }
 }
 
-module.exports = { User, Sauce, mongoose };
+module.exports = { User, Sauce };
