@@ -14,12 +14,6 @@ mongoose
   .then(() => console.log("connected to mongodb"))
   .catch(err => console.error(err));
 
-const userSchema = new mongoose.Schema({
-  email: { type: String, unique: true },
-  password: { type: String }
-});
-userSchema.plugin(uniqueValidator);
-
 const sauceSchema = new mongoose.Schema({
   userId: String,
   name: String,
@@ -34,21 +28,39 @@ const sauceSchema = new mongoose.Schema({
   usersDisliked: [{ userId: String }]
 });
 
-let User = mongoose.model("User", userSchema);
 let Sauce = mongoose.model("Sauce", sauceSchema);
 
-const createUser = ({ email, password }) => {
-  let user = new User({ email, password });
-  return user
-    .save()
-    .then(() => "Utilisateur enregistré")
-    .catch(err => err);
-};
+class User {
+  constructor() {
+    this.createSchema();
+    this.createModel();
+  }
+  createSchema() {
+    this.userSchema = new mongoose.Schema({
+      email: { type: String, unique: true },
+      password: { type: String }
+    });
+    this.userSchema.plugin(uniqueValidator);
+  }
 
-const getUser = ({ email, password }) => {
-  return User.findOne({ email, password })
-    .then(user => user)
-    .catch(err => err);
-};
+  createModel() {
+    this.userModel = mongoose.model("User", this.userSchema);
+  }
 
-module.exports = { User, Sauce, mongoose, createUser, getUser };
+  createUser = ({ email, password }) => {
+    let user = new this.userModel({ email, password });
+    return user
+      .save()
+      .then(() => "Utilisateur enregistré")
+      .catch(err => err);
+  };
+
+  getUser = ({ email, password }) => {
+    return this.userModel
+      .findOne({ email, password })
+      .then(user => user)
+      .catch(err => err);
+  };
+}
+
+module.exports = { User, Sauce, mongoose };
