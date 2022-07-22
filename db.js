@@ -45,4 +45,10 @@ const createUser = ({ email, password }) => {
     .catch(err => err);
 };
 
-module.exports = { User, Sauce, mongoose, createUser };
+const getUser = ({ email, password }) => {
+  return User.findOne({ email, password })
+    .then(user => user)
+    .catch(err => err);
+};
+
+module.exports = { User, Sauce, mongoose, createUser, getUser };
