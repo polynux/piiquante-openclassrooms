@@ -8,7 +8,7 @@ server.on("listening", () => {
 
 let User = new db.User();
 
-User.createUser({ email: "test2@gmail.com", password: "test" }).then(console.log);
-User.getUser({ email: "test2@gmail.com", password: "tests" }).then(console.log);
+User.newUser({ email: "test2@gmail.com", password: "test" }).then(console.log).catch(console.error);
+User.getUser({ email: "test2@gmail.com", password: "test" }).then(console.log).catch(console.error);
 
 server.listen(3000);

@@ -33,17 +33,11 @@ class User {
 
   newUser = ({ email, password }) => {
     let user = new this.userModel({ email, password });
-    return user
-      .save()
-      .then(() => "Utilisateur enregistré")
-      .catch(err => err);
+    return user.save();
   };
 
   getUser = ({ email, password }) => {
-    return this.userModel
-      .findOne({ email, password })
-      .then(user => user)
-      .catch(err => err);
+    return this.userModel.findOne({ email, password });
   };
 }
 
@@ -74,10 +68,15 @@ class Sauce {
 
   newSauce(sauce) {
     let newSauce = new this.sauceModel(sauce);
-    return newSauce
-      .save()
-      .then(() => "Sauce enregistrée")
-      .catch(err => err);
+    return newSauce.save();
+  }
+
+  getAllSauces() {
+    return this.sauceModel.find();
+  }
+
+  getSauce(id) {
+    return this.sauceModel.findById(id);
   }
 }
 
