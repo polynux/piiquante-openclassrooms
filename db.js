@@ -36,8 +36,8 @@ class User {
     return user.save();
   };
 
-  getUser = ({ email, password }) => {
-    return this.userModel.findOne({ email, password });
+  getUser = email => {
+    return this.userModel.findOne({ email }).exec();
   };
 }
 
