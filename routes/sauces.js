@@ -41,7 +41,7 @@ router.get("/:id", (req, res) => {
   res.status(200).json({ sauce: "test" });
 });
 
-router.post("/", upload.single("image"), (req, res) => {
+function createSauce(req, res) {
   let sauce = JSON.parse(req.body.sauce);
   sauce.imageUrl = "/uploads/" + req.file.filename;
   sauce.usersLiked = [];
@@ -54,10 +54,12 @@ router.post("/", upload.single("image"), (req, res) => {
       if (!sauce) {
         return res.status(500).json({ message: "Error! Could not create sauce." });
       }
-      res.status(200).json({ message: "Sauce created" });
+      return res.status(200).json({ message: "Sauce created" });
     })
     .catch(res.status(500));
-});
+}
+
+router.post("/", upload.single("image"), createSauce);
 
 router.put("/:id", (req, res) => {
   res.status(200).json({ message: "message" });
