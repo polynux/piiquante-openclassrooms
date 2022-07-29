@@ -1,4 +1,7 @@
 const router = require("express").Router();
+const multer = require("multer");
+const uuidv4 = require("uuid").v4;
+const path = require("path");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -18,6 +21,15 @@ function checkToken(req, res, next) {
   });
 }
 
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, "../public/uploads"),
+  filename: (req, file, cb) => {
+    cb(null, uuidv4() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage });
+
 router.use(checkToken);
 
 router.get("/", (req, res) => {
@@ -28,8 +40,8 @@ router.get("/:id", (req, res) => {
   res.status(200).json({ sauce: "test" });
 });
 
-router.post("/", (req, res) => {
-  res.status(200).json({ message: "message" });
+router.post("/", upload.single("image"), (req, res) => {
+  res.status(200).json({ sucess: true, message: "Sauce created", image: "/uploads/" + req.file.filename });
 });
 
 router.put("/:id", (req, res) => {
