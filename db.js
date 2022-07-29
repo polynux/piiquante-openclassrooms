@@ -57,8 +57,8 @@ class Sauce {
       heat: Number,
       likes: Number,
       dislikes: Number,
-      usersLiked: [{ userId: String }],
-      usersDisliked: [{ userId: String }]
+      usersLiked: [String],
+      usersDisliked: [String]
     });
   }
 
