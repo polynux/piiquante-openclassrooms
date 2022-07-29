@@ -76,16 +76,20 @@ function createSauce(req, res) {
 router.post("/", upload.single("image"), createSauce);
 
 function editSauce(req, res) {
-  if (!req.body.sauce) {
-    Sauce.editSauce(req.params.id, { ...req.body })
-      .then(sauce => {
-        if (!sauce) {
-          return res.status(500).json({ message: "Error! Could not edit sauce." });
-        }
-        return res.status(200).json({ message: "Sauce edited" });
-      })
-      .catch(res.status(500));
+  let sauce = req.body;
+  if (req.body.sauce) {
+    sauce = JSON.parse(req.body.sauce);
+    sauce.imageUrl = "http://localhost:3000/uploads/" + req.file.filename;
   }
+
+  return Sauce.editSauce(req.params.id, sauce)
+    .then(sauce => {
+      if (!sauce) {
+        return res.status(500).json({ message: "Error! Could not edit sauce." });
+      }
+      return res.status(200).json({ message: "Sauce edited" });
+    })
+    .catch(res.status(500));
 }
 
 router.put("/:id", upload.single("image"), editSauce);
