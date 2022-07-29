@@ -82,6 +82,10 @@ class Sauce {
   editSauce(id, sauce) {
     return this.sauceModel.findByIdAndUpdate(id, sauce, { new: true });
   }
+
+  deleteSauce(id) {
+    return this.sauceModel.findByIdAndDelete(id);
+  }
 }
 
 module.exports = { User, Sauce };
