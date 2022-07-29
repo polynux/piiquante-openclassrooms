@@ -6,6 +6,11 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const Sauce = new (require("../db.js").Sauce)();
 
+// delete file
+const fs = require("fs");
+const { promisify } = require("util");
+const unlinkAsync = promisify(fs.unlink);
+
 function extractToken(authorization) {
   if (authorization === undefined) return false;
   const matches = authorization.match(/(bearer)\s+(\S+)/i);
@@ -29,7 +34,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+const uploadImage = multer({ storage }).single("image");
 
 router.use(checkToken);
 
@@ -73,10 +78,11 @@ function createSauce(req, res) {
     .catch(res.status(500));
 }
 
-router.post("/", upload.single("image"), createSauce);
+router.post("/", uploadImage, createSauce);
 
 function editSauce(req, res) {
   let sauce = req.body;
+  let oldImageUrl = sauce.imageUrl;
   if (req.body.sauce) {
     sauce = JSON.parse(req.body.sauce);
     sauce.imageUrl = "http://localhost:3000/uploads/" + req.file.filename;
@@ -87,12 +93,15 @@ function editSauce(req, res) {
       if (!sauce) {
         return res.status(500).json({ message: "Error! Could not edit sauce." });
       }
+      if (oldImageUrl !== undefined && oldImageUrl !== sauce.imageUrl) {
+        unlinkAsync(path.join(__dirname, "../public/" + oldImageUrl.replace("http://localhost:3000/", "")));
+      }
       return res.status(200).json({ message: "Sauce edited" });
     })
     .catch(res.status(500));
 }
 
-router.put("/:id", upload.single("image"), editSauce);
+router.put("/:id", uploadImage, editSauce);
 
 router.delete("/:id", (req, res) => {
   res.status(200).json({ message: "message" });
