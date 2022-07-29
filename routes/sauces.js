@@ -94,8 +94,81 @@ router.delete("/:id", (req, res) => {
   res.status(200).json({ message: "message" });
 });
 
-router.post("/:id/like", (req, res) => {
-  res.status(200).json({ message: "message" });
-});
+function userListContains(list, userId) {
+  return list.find(user => user === userId) !== undefined ? true : false;
+}
+
+function removeUserFromList(list, userId) {
+  return list.filter(user => user !== userId);
+}
+
+function likeSauce(sauce, userId) {
+  sauce.usersLiked.push(userId);
+  if (userListContains(sauce.usersDisliked, userId)) {
+    sauce.dislikes--;
+  }
+  sauce.usersDisliked = removeUserFromList(sauce.usersDisliked, userId);
+  sauce.likes++;
+
+  return sauce;
+}
+
+function dislikeSauce(sauce, userId) {
+  sauce.usersDisliked.push(userId);
+  if (userListContains(sauce.usersLiked, userId)) {
+    sauce.likes--;
+  }
+  sauce.usersLiked = removeUserFromList(sauce.usersLiked, userId);
+  sauce.dislikes++;
+
+  return sauce;
+}
+
+function clearLikes(sauce, userId) {
+  if (userListContains(sauce.usersDisliked, userId)) {
+    sauce.dislikes--;
+  }
+  if (userListContains(sauce.usersLiked, userId)) {
+    sauce.likes--;
+  }
+  sauce.usersLiked = removeUserFromList(sauce.usersLiked, userId);
+  sauce.usersDisliked = removeUserFromList(sauce.usersDisliked, userId);
+  return sauce;
+}
+
+function setLikes(req, res) {
+  let userId = req.body.userId;
+  Sauce.getSauce(req.params.id)
+    .then(sauce => {
+      if (!sauce) {
+        return res.status(500).json({ message: "Error! Could not get sauce." });
+      }
+
+      if (req.body.like === 1) {
+        if (userListContains(sauce.usersLiked, userId)) {
+          return res.status(401).json({ message: "Sauce already liked" });
+        }
+        sauce = likeSauce(sauce, userId);
+      } else if (req.body.like === -1) {
+        if (userListContains(sauce.usersDisliked, userId)) {
+          return res.status(401).json({ message: "Sauce already disliked" });
+        }
+        sauce = dislikeSauce(sauce, userId);
+      } else if (req.body.like === 0) {
+        sauce = clearLikes(sauce, userId);
+      }
+
+      return Sauce.editSauce(req.params.id, sauce);
+    })
+    .then(sauce => {
+      if (!sauce) {
+        return res.status(500).json({ message: "Error! Could not edit sauce." });
+      }
+      return res.status(200).json({ message: "Sauce liked" });
+    })
+    .catch(res.status(500));
+}
+
+router.post("/:id/like", setLikes);
 
 module.exports = router;
