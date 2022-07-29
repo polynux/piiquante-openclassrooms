@@ -4,6 +4,7 @@ const uuidv4 = require("uuid").v4;
 const path = require("path");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const Sauce = new (require("../db.js").Sauce)();
 
 function extractToken(authorization) {
   if (authorization === undefined) return false;
@@ -41,7 +42,21 @@ router.get("/:id", (req, res) => {
 });
 
 router.post("/", upload.single("image"), (req, res) => {
-  res.status(200).json({ sucess: true, message: "Sauce created", image: "/uploads/" + req.file.filename });
+  let sauce = JSON.parse(req.body.sauce);
+  sauce.imageUrl = "/uploads/" + req.file.filename;
+  sauce.usersLiked = [];
+  sauce.usersDisliked = [];
+  sauce.likes = 0;
+  sauce.dislikes = 0;
+
+  Sauce.newSauce(sauce)
+    .then(sauce => {
+      if (!sauce) {
+        return res.status(500).json({ message: "Error! Could not create sauce." });
+      }
+      res.status(200).json({ message: "Sauce created" });
+    })
+    .catch(res.status(500));
 });
 
 router.put("/:id", (req, res) => {
