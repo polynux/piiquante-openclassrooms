@@ -75,9 +75,20 @@ function createSauce(req, res) {
 
 router.post("/", upload.single("image"), createSauce);
 
-router.put("/:id", (req, res) => {
-  res.status(200).json({ message: "message" });
-});
+function editSauce(req, res) {
+  if (!req.body.sauce) {
+    Sauce.editSauce(req.params.id, { ...req.body })
+      .then(sauce => {
+        if (!sauce) {
+          return res.status(500).json({ message: "Error! Could not edit sauce." });
+        }
+        return res.status(200).json({ message: "Sauce edited" });
+      })
+      .catch(res.status(500));
+  }
+}
+
+router.put("/:id", upload.single("image"), editSauce);
 
 router.delete("/:id", (req, res) => {
   res.status(200).json({ message: "message" });
