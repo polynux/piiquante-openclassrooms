@@ -78,6 +78,10 @@ class Sauce {
   getSauce(id) {
     return this.sauceModel.findById(id);
   }
+
+  editSauce(id, sauce) {
+    return this.sauceModel.findByIdAndUpdate(id, sauce, { new: true });
+  }
 }
 
 module.exports = { User, Sauce };
