@@ -45,12 +45,19 @@ router.get("/", (req, res) => {
 });
 
 router.get("/:id", (req, res) => {
-  res.status(200).json({ sauce: "test" });
+  Sauce.getSauce(req.params.id)
+    .then(sauce => {
+      if (!sauce) {
+        return res.status(500).json({ message: "Error! Could not get sauce." });
+      }
+      return res.status(200).json(sauce);
+    })
+    .catch(res.status(500));
 });
 
 function createSauce(req, res) {
   let sauce = JSON.parse(req.body.sauce);
-  sauce.imageUrl = "/uploads/" + req.file.filename;
+  sauce.imageUrl = "http://localhost:3000/uploads/" + req.file.filename;
   sauce.usersLiked = [];
   sauce.usersDisliked = [];
   sauce.likes = 0;
