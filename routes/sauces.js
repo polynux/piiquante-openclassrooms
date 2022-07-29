@@ -34,7 +34,14 @@ const upload = multer({ storage });
 router.use(checkToken);
 
 router.get("/", (req, res) => {
-  res.status(200).json([{ sauce: "test" }]);
+  Sauce.getAllSauces()
+    .then(sauces => {
+      if (!sauces) {
+        return res.status(500).json({ message: "Error! Could not get sauces." });
+      }
+      return res.status(200).json(sauces);
+    })
+    .catch(res.status(500));
 });
 
 router.get("/:id", (req, res) => {
