@@ -106,9 +106,19 @@ function editSauce(req, res) {
 
 router.put('/:id', uploadImage, editSauce);
 
-router.delete('/:id', (req, res) => {
-  res.status(200).json({ message: 'message' });
-});
+function deleteSauce(req, res) {
+  Sauce.deleteSauce(req.params.id)
+    .then((sauce) => {
+      if (!sauce) {
+        return res.status(500).json({ message: 'Error! Could not delete sauce.' });
+      }
+      unlinkAsync(path.join(__dirname, `../public/uploads/${sauce.imageUrl}`));
+      return res.status(200).json({ message: 'Sauce deleted' });
+    })
+    .catch(res.status(500));
+}
+
+router.delete('/:id', deleteSauce);
 
 function userListContains(list, userId) {
   return list.find((user) => user === userId) !== undefined;
