@@ -40,7 +40,7 @@ class Sauce {
   }
 
   editSauce(id, sauce) {
-    return this.SauceModel.findByIdAndUpdate(id, sauce, { new: true });
+    return this.SauceModel.findByIdAndUpdate(id, sauce, { new: false });
   }
 
   deleteSauce(id) {

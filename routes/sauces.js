@@ -42,6 +42,10 @@ router.get('/', (req, res) => {
       if (!sauces) {
         return res.status(500).json({ message: 'Error! Could not get sauces.' });
       }
+      sauces = sauces.map((sauce) => {
+        sauce.imageUrl = `http://localhost:3000/uploads/${sauce.imageUrl}`;
+        return sauce;
+      });
       return res.status(200).json(sauces);
     })
     .catch(res.status(500));
@@ -53,6 +57,7 @@ router.get('/:id', (req, res) => {
       if (!sauce) {
         return res.status(500).json({ message: 'Error! Could not get sauce.' });
       }
+      sauce.imageUrl = `http://localhost:3000/uploads/${sauce.imageUrl}`;
       return res.status(200).json(sauce);
     })
     .catch(res.status(500));
@@ -60,7 +65,7 @@ router.get('/:id', (req, res) => {
 
 function createSauce(req, res) {
   const sauce = JSON.parse(req.body.sauce);
-  sauce.imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+  sauce.imageUrl = req.file.filename;
   sauce.usersLiked = [];
   sauce.usersDisliked = [];
   sauce.likes = 0;
@@ -80,19 +85,19 @@ router.post('/', uploadImage, createSauce);
 
 function editSauce(req, res) {
   let sauce = req.body;
-  const oldImageUrl = sauce.imageUrl;
   if (req.body.sauce) {
     sauce = JSON.parse(req.body.sauce);
-    sauce.imageUrl = `http://localhost:3000/uploads/${req.file.filename}`;
+    sauce.imageUrl = req.file.filename;
   }
+  const newImageUrl = sauce.imageUrl;
 
   return Sauce.editSauce(req.params.id, sauce)
-    .then((sauceDb) => {
-      if (!sauceDb) {
+    .then((oldSauce) => {
+      if (!oldSauce) {
         return res.status(500).json({ message: 'Error! Could not edit sauce.' });
       }
-      if (oldImageUrl !== undefined && oldImageUrl !== sauce.imageUrl) {
-        unlinkAsync(path.join(__dirname, `../public/${oldImageUrl.replace('http://localhost:3000/', '')}`));
+      if (newImageUrl !== undefined && newImageUrl !== oldSauce.imageUrl) {
+        unlinkAsync(path.join(__dirname, `../public/uploads/${oldSauce.imageUrl}`));
       }
       return res.status(200).json({ message: 'Sauce edited' });
     })
