@@ -101,6 +101,9 @@ function editSauce(req, res) {
     sauce.imageUrl = req.file.filename;
   }
   if (!isUserAuthorized(sauce.userId, req)) {
+    if (req.file) {
+      unlinkAsync(path.join(__dirname, `../public/uploads/${req.file.filename}`));
+    }
     return res.status(403).json({ message: 'Error! You are not authorized to edit this sauce.' });
   }
   const newImageUrl = sauce.imageUrl;
