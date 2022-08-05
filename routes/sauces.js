@@ -17,8 +17,13 @@ function extractToken(authorization) {
   return matches && matches[2];
 }
 
-function checkToken(req, res, next) {
+function getToken(req) {
   const token = req.headers.authorization && extractToken(req.headers.authorization);
+  return token;
+}
+
+function checkToken(req, res, next) {
+  const token = getToken(req);
 
   if (!token) return res.status(401).json({ message: 'Error! Need a token.' });
 
@@ -83,11 +88,20 @@ function createSauce(req, res) {
 
 router.post('/', uploadImage, createSauce);
 
+function isUserAuthorized(sauceUserId, req) {
+  const token = getToken(req);
+  const decodedToken = jwt.decode(token);
+  return decodedToken.id === sauceUserId;
+}
+
 function editSauce(req, res) {
   let sauce = req.body;
   if (req.body.sauce) {
     sauce = JSON.parse(req.body.sauce);
     sauce.imageUrl = req.file.filename;
+  }
+  if (!isUserAuthorized(sauce.userId, req)) {
+    return res.status(403).json({ message: 'Error! You are not authorized to edit this sauce.' });
   }
   const newImageUrl = sauce.imageUrl;
 
@@ -107,15 +121,19 @@ function editSauce(req, res) {
 router.put('/:id', uploadImage, editSauce);
 
 function deleteSauce(req, res) {
-  Sauce.deleteSauce(req.params.id)
-    .then((sauce) => {
-      if (!sauce) {
-        return res.status(500).json({ message: 'Error! Could not delete sauce.' });
-      }
-      unlinkAsync(path.join(__dirname, `../public/uploads/${sauce.imageUrl}`));
-      return res.status(200).json({ message: 'Sauce deleted' });
-    })
-    .catch(res.status(500));
+  Sauce.getSauce(req.params.id).then((sauce) => {
+    if (!sauce) {
+      return res.status(500).json({ message: 'Error! Could not get sauce.' });
+    }
+    if (!isUserAuthorized(sauce.userId, req)) {
+      return res.status(403).json({ message: 'Error! You are not authorized to delete this sauce.' });
+    }
+    return Sauce.deleteSauce(req.params.id)
+      .then(() => {
+        unlinkAsync(path.join(__dirname, `../public/uploads/${sauce.imageUrl}`));
+        return res.status(200).json({ message: 'Sauce deleted' });
+      }).catch(res.status(500));
+  }).catch(res.status(500));
 }
 
 router.delete('/:id', deleteSauce);
