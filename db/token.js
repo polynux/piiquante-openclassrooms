@@ -1,14 +1,18 @@
 const mongoose = require('mongoose');
 
 class Token {
-  constructor() {
-    this.createSchema();
+  constructor(expiration = 3600) {
+    this.createSchema(expiration);
     this.createModel();
   }
 
-  createSchema() {
+  createSchema(expiration) {
     this.tokenSchema = new mongoose.Schema({
-      token: String,
+      token: { type: String, required: true },
+      userId: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+      expireAt: { type: Date, default: Date.now, expires: expiration },
+      lifeSpan: { type: Number, default: expiration },
     });
   }
 
@@ -16,14 +20,14 @@ class Token {
     this.TokenModel = mongoose.model('Token', this.tokenSchema);
   }
 
-  newToken = (token) => {
-    const tokenObj = new this.UserModel(token);
+  newToken = (obj) => {
+    const tokenObj = new this.TokenModel(obj);
     return tokenObj.save();
   };
 
   getToken = (token) => this.TokenModel.findOne({ token }).exec();
+
+  delToken = (token) => this.TokenModel.findOneAndDelete({ token }).exec();
 }
 
-const token = new Token();
-
-module.exports = token;
+module.exports = Token;
