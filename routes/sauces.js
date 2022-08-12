@@ -1,34 +1,19 @@
-const fs = require('fs');
-const { promisify } = require('util');
 const router = require('express').Router();
 const multer = require('multer');
 const uuidv4 = require('uuid').v4;
 const path = require('path');
-const jwt = require('jsonwebtoken');
+const { verifyToken, decodeToken, unlinkAsync } = require('../utils');
 require('dotenv').config();
 const Sauce = require('../db/sauce');
 
-// delete file
-const unlinkAsync = promisify(fs.unlink);
-
-function extractToken(authorization) {
-  if (authorization === undefined) return false;
-  const matches = authorization.match(/(bearer)\s+(\S+)/i);
-  return matches && matches[2];
-}
-
-function getToken(req) {
-  const token = req.headers.authorization && extractToken(req.headers.authorization);
-  return token;
-}
-
-function checkToken(req, res, next) {
-  const token = getToken(req);
-
-  if (!token) return res.status(401).json({ message: 'Error! Need a token.' });
-
-  return jwt.verify(token, process.env.SECRET, (err) => (err ? res.status(401).json({ message: 'Error! Bad token.' }) : next()));
-}
+const checkToken = (req, res, next) => verifyToken(req.headers.authorization)
+  .then((token) => {
+    if (token.err) {
+      return res.status(401).json({ message: 'Unauthorized', error: token.err });
+    }
+    return next();
+  })
+  .catch((err) => res.status(401).json({ message: 'Token not found!', error: err }));
 
 const storage = multer.diskStorage({
   destination: path.join(__dirname, '../public/uploads'),
@@ -89,8 +74,7 @@ function createSauce(req, res) {
 router.post('/', uploadImage, createSauce);
 
 function isUserAuthorized(sauceUserId, req) {
-  const token = getToken(req);
-  const decodedToken = jwt.decode(token);
+  const decodedToken = decodeToken(req.headers.authorization);
   return decodedToken.id === sauceUserId;
 }
 
@@ -124,19 +108,22 @@ function editSauce(req, res) {
 router.put('/:id', uploadImage, editSauce);
 
 function deleteSauce(req, res) {
-  Sauce.getSauce(req.params.id).then((sauce) => {
-    if (!sauce) {
-      return res.status(500).json({ message: 'Error! Could not get sauce.' });
-    }
-    if (!isUserAuthorized(sauce.userId, req)) {
-      return res.status(403).json({ message: 'Error! You are not authorized to delete this sauce.' });
-    }
-    return Sauce.deleteSauce(req.params.id)
-      .then(() => {
-        unlinkAsync(path.join(__dirname, `../public/uploads/${sauce.imageUrl}`));
-        return res.status(200).json({ message: 'Sauce deleted' });
-      }).catch(res.status(500));
-  }).catch(res.status(500));
+  Sauce.getSauce(req.params.id)
+    .then((sauce) => {
+      if (!sauce) {
+        return res.status(500).json({ message: 'Error! Could not get sauce.' });
+      }
+      if (!isUserAuthorized(sauce.userId, req)) {
+        return res.status(403).json({ message: 'Error! You are not authorized to delete this sauce.' });
+      }
+      return Sauce.deleteSauce(req.params.id)
+        .then(() => {
+          unlinkAsync(path.join(__dirname, `../public/uploads/${sauce.imageUrl}`));
+          return res.status(200).json({ message: 'Sauce deleted' });
+        })
+        .catch(res.status(500));
+    })
+    .catch(res.status(500));
 }
 
 router.delete('/:id', deleteSauce);
