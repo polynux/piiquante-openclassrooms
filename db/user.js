@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
+const mongooseErrors = require('mongoose-errors');
 
 class User {
   constructor() {
@@ -13,6 +14,7 @@ class User {
       password: { type: String },
     });
     this.userSchema.plugin(uniqueValidator);
+    this.userSchema.plugin(mongooseErrors);
   }
 
   createModel() {

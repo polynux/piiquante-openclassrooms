@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongooseErrors = require('mongoose-errors');
 
 class Sauce {
   constructor() {
@@ -20,6 +21,7 @@ class Sauce {
       usersLiked: [String],
       usersDisliked: [String],
     });
+    this.sauceSchema.plugin(mongooseErrors);
   }
 
   createModel() {

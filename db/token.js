@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongooseErrors = require('mongoose-errors');
 
 class Token {
   constructor(expiration = 3600) {
@@ -14,6 +15,7 @@ class Token {
       expireAt: { type: Date, default: Date.now, expires: expiration },
       lifeSpan: { type: Number, default: expiration },
     });
+    this.tokenSchema.plugin(mongooseErrors);
   }
 
   createModel() {
@@ -22,6 +24,7 @@ class Token {
 
   newToken = (obj) => {
     const tokenObj = new this.TokenModel(obj);
+    tokenObj.validateSync();
     return tokenObj.save();
   };
 
