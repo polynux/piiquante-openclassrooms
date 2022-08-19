@@ -2,6 +2,7 @@ const fs = require('fs');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const sha256 = require('crypto-js/sha256');
 const TokenClass = require('./db/token');
 
 require('dotenv').config();
@@ -16,6 +17,8 @@ const genToken = (id) => {
 
 const hashPassword = (password) => bcrypt.hash(password, 10);
 const comparePassword = (password, hash) => bcrypt.compare(password, hash);
+
+const hashEmail = (email) => sha256(email).toString();
 
 // delete file
 const unlinkAsync = promisify(fs.unlink);
@@ -51,4 +54,5 @@ module.exports = {
   hashPassword,
   comparePassword,
   unlinkAsync,
+  hashEmail,
 };

@@ -5,7 +5,9 @@ const db = require('./db');
 const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 
-db.connect().then(() => console.log('connected to mongodb')).catch((err) => console.error(err));
+db.connect()
+  .then(() => console.log('connected to mongodb'))
+  .catch((err) => console.error(err));
 
 server.on('listening', () => {
   console.log('Listening on 3000');

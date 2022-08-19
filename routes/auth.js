@@ -1,10 +1,11 @@
 const router = require('express').Router();
 require('dotenv').config();
-const { comparePassword, hashPassword, genToken } = require('../utils');
+const { comparePassword, hashPassword, genToken, hashEmail } = require('../utils');
 const User = require('../db/user');
 
 router.post('/login', (req, res) => {
-  User.getUser(req.body.email)
+  const email = hashEmail(req.body.email);
+  User.getUser(email)
     .then((user) => {
       if (!user) {
         return res.status(401).json({ message: 'UUser not exist!' });
@@ -24,7 +25,8 @@ router.post('/login', (req, res) => {
 router.post('/signup', (req, res) => {
   hashPassword(req.body.password)
     .then((hash) => {
-      User.newUser({ ...req.body, password: hash })
+      const email = hashEmail(req.body.email);
+      User.newUser({ ...req.body, password: hash, email })
         .then((user) => {
           if (!user) {
             return res.status(500).json({ message: 'Error! Could not create user.' });
