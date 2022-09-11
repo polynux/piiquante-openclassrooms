@@ -30,7 +30,7 @@ router.get('/', (req, res) => {
   Sauce.getAllSauces()
     .then((sauces) => {
       if (!sauces) {
-        return res.status(500).json({ message: 'Error! Could not get sauces.' });
+        throw new Error('Error! Could not get sauces.');
       }
       sauces = sauces.map((sauce) => {
         sauce.imageUrl = `http://localhost:3000/uploads/${sauce.imageUrl}`;
@@ -38,7 +38,7 @@ router.get('/', (req, res) => {
       });
       return res.status(200).json(sauces);
     })
-    .catch(res.status(500));
+    .catch((err) => res.status(500).json({ message: err.message }));
 });
 
 router.get('/:id', (req, res) => {
@@ -54,6 +54,10 @@ router.get('/:id', (req, res) => {
 });
 
 function createSauce(req, res) {
+  if (!req.file) {
+    res.status(400).json({ message: 'Error! No image provided.' });
+    return;
+  }
   const sauce = JSON.parse(req.body.sauce);
   sauce.imageUrl = req.file.filename;
   sauce.usersLiked = [];
@@ -64,11 +68,14 @@ function createSauce(req, res) {
   Sauce.newSauce(sauce)
     .then((sauceDb) => {
       if (!sauceDb) {
-        return res.status(500).json({ message: 'Error! Could not create sauce.' });
+        throw new Error('Error! Could not create sauce.');
       }
       return res.status(200).json({ message: 'Sauce created' });
     })
-    .catch(res.status(500));
+    .catch((err) => {
+      unlinkAsync(path.join(__dirname, `../public/uploads/${sauce.imageUrl}`));
+      res.status(500).json({ message: err.message });
+    });
 }
 
 router.post('/', uploadImage, createSauce);
@@ -175,17 +182,17 @@ function setLikes(req, res) {
   Sauce.getSauce(req.params.id)
     .then((sauce) => {
       if (!sauce) {
-        return res.status(500).json({ message: 'Error! Could not get sauce.' });
+        throw new Error('Error! Could not get sauce.');
       }
 
       if (req.body.like === 1) {
         if (userListContains(sauce.usersLiked, userId)) {
-          return res.status(401).json({ message: 'Sauce already liked' });
+          throw new Error('Sauce already liked');
         }
         sauce = likeSauce(sauce, userId);
       } else if (req.body.like === -1) {
         if (userListContains(sauce.usersDisliked, userId)) {
-          return res.status(401).json({ message: 'Sauce already disliked' });
+          throw new Error('Sauce already disliked');
         }
         sauce = dislikeSauce(sauce, userId);
       } else if (req.body.like === 0) {
@@ -200,7 +207,9 @@ function setLikes(req, res) {
       }
       return res.status(200).json({ message: 'Sauce liked' });
     })
-    .catch(res.status(500));
+    .catch((err) => {
+      res.status(500).json({ message: err.message });
+    });
 }
 
 router.post('/:id/like', setLikes);

@@ -8,7 +8,7 @@ router.post('/login', (req, res) => {
   User.getUser(email)
     .then((user) => {
       if (!user) {
-        return res.status(401).json({ message: 'UUser not exist!' });
+        return res.status(401).json({ message: 'User not exist!' });
       }
       return comparePassword(req.body.password, user.password).then((isMatch) => {
         if (!isMatch) {
@@ -35,7 +35,7 @@ router.post('/signup', (req, res) => {
             .then((tokenObj) => res.status(200).json({ userId: user._id, token: tokenObj.token }))
             .catch(res.status(500));
         })
-        .catch(res.status(500));
+        .catch((error) => res.status(400).json({ message: error.info }));
     })
     .catch(res.status(500));
 });

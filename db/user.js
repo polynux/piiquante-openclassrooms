@@ -23,6 +23,9 @@ class User {
 
   newUser = ({ email, password }) => {
     const user = new this.UserModel({ email, password });
+    if (user.validateSync()) {
+      throw new Error(user.errors);
+    }
     return user.save();
   };
 

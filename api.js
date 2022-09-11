@@ -15,4 +15,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/sauces', sauces);
 app.use('/api/auth', auth);
 
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ message: 'Invalid JSON' });
+  }
+  res.status(500).send('Something broke!');
+});
+
 module.exports = app;
