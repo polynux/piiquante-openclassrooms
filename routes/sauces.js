@@ -85,19 +85,33 @@ function isUserAuthorized(sauceUserId, req) {
   return decodedToken.id === sauceUserId;
 }
 
-function editSauce(req, res) {
+async function editSauce(req, res) {
   let sauce = req.body;
   if (req.body.sauce) {
     sauce = JSON.parse(req.body.sauce);
     sauce.imageUrl = req.file.filename;
   }
-  if (!isUserAuthorized(sauce.userId, req)) {
+
+  // get sauce from db
+  const sauceDb = await Sauce.getSauce(req.params.id);
+  if (!isUserAuthorized(sauceDb.userId, req)) {
     if (req.file) {
       unlinkAsync(path.join(__dirname, `../public/uploads/${req.file.filename}`));
     }
     return res.status(403).json({ message: 'Error! You are not authorized to edit this sauce.' });
   }
   const newImageUrl = sauce.imageUrl;
+
+  // check if sauce has all required fields
+  if (!sauce.name || !sauce.manufacturer || !sauce.description || !sauce.mainPepper || !sauce.heat) {
+    if (req.file) {
+      unlinkAsync(path.join(__dirname, `../public/uploads/${req.file.filename}`));
+    }
+    return res.status(400).json({ message: 'Error! Sauce is missing required fields.' });
+  }
+
+  // merge sauce from db with sauce from request
+  sauce = { ...sauceDb, ...sauce };
 
   return Sauce.editSauce(req.params.id, sauce)
     .then((oldSauce) => {
