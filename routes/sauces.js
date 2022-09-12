@@ -102,14 +102,19 @@ function editSauce(req, res) {
   return Sauce.editSauce(req.params.id, sauce)
     .then((oldSauce) => {
       if (!oldSauce) {
-        return res.status(500).json({ message: 'Error! Could not edit sauce.' });
+        throw new Error('Error! Could not edit sauce.');
       }
       if (newImageUrl !== undefined && newImageUrl !== oldSauce.imageUrl) {
-        unlinkAsync(path.join(__dirname, `../public/uploads/${oldSauce.imageUrl}`));
+        unlinkAsync(path.join(__dirname, `../public/uploads/${req.file.filename}`));
       }
       return res.status(200).json({ message: 'Sauce edited' });
     })
-    .catch(res.status(500));
+    .catch((err) => {
+      if (req.file) {
+        unlinkAsync(path.join(__dirname, `../public/uploads/${req.file.filename}`));
+      }
+      res.status(500).json({ message: err.message });
+    });
 }
 
 router.put('/:id', uploadImage, editSauce);
@@ -118,7 +123,7 @@ function deleteSauce(req, res) {
   Sauce.getSauce(req.params.id)
     .then((sauce) => {
       if (!sauce) {
-        return res.status(500).json({ message: 'Error! Could not get sauce.' });
+        throw new Error('Error! Could not get sauce.');
       }
       if (!isUserAuthorized(sauce.userId, req)) {
         return res.status(403).json({ message: 'Error! You are not authorized to delete this sauce.' });
@@ -128,9 +133,9 @@ function deleteSauce(req, res) {
           unlinkAsync(path.join(__dirname, `../public/uploads/${sauce.imageUrl}`));
           return res.status(200).json({ message: 'Sauce deleted' });
         })
-        .catch(res.status(500));
+        .catch((err) => res.status(500).json({ message: err.message }));
     })
-    .catch(res.status(500));
+    .catch((err) => res.status(400).json({ message: err.message }));
 }
 
 router.delete('/:id', deleteSauce);
