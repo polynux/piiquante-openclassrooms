@@ -6,14 +6,15 @@ const { verifyToken, decodeToken, unlinkAsync } = require('../utils');
 require('dotenv').config();
 const Sauce = require('../db/sauce');
 
-const checkToken = (req, res, next) => verifyToken(req.headers.authorization)
-  .then((token) => {
-    if (token.err) {
-      return res.status(401).json({ message: 'Unauthorized', error: token.err });
-    }
-    return next();
-  })
-  .catch((err) => res.status(401).json({ message: 'Token not found!', error: err }));
+const checkToken = (req, res, next) =>
+  verifyToken(req.headers.authorization)
+    .then((token) => {
+      if (token.err) {
+        return res.status(401).json({ message: 'Unauthorized', error: token.err });
+      }
+      return next();
+    })
+    .catch((err) => res.status(401).json({ message: 'Token not found!', error: err }));
 
 const storage = multer.diskStorage({
   destination: path.join(__dirname, '../public/uploads'),
@@ -111,7 +112,13 @@ async function editSauce(req, res) {
   }
 
   // merge sauce from db with sauce from request
-  sauce = { ...sauceDb, ...sauce };
+  sauce = {
+    ...sauce,
+    likes: sauceDb.likes,
+    dislikes: sauceDb.dislikes,
+    usersLiked: sauceDb.usersLiked,
+    usersDisliked: sauceDb.usersDisliked,
+  };
 
   return Sauce.editSauce(req.params.id, sauce)
     .then((oldSauce) => {
@@ -119,7 +126,7 @@ async function editSauce(req, res) {
         throw new Error('Error! Could not edit sauce.');
       }
       if (newImageUrl !== undefined && newImageUrl !== oldSauce.imageUrl) {
-        unlinkAsync(path.join(__dirname, `../public/uploads/${req.file.filename}`));
+        unlinkAsync(path.join(__dirname, `../public/uploads/${oldSauce.imageUrl}`));
       }
       return res.status(200).json({ message: 'Sauce edited' });
     })
