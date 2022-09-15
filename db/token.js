@@ -12,7 +12,7 @@ class Token {
       token: { type: String, required: true },
       userId: { type: String, required: true },
       createdAt: { type: Date, default: Date.now },
-      expireAt: { type: Date, default: Date.now, expires: expiration },
+      expireAt: { type: Date, default: Date.now() + expiration * 1000, expires: expiration },
       lifeSpan: { type: Number, default: expiration },
     });
     this.tokenSchema.plugin(mongooseErrors);
